@@ -1,5 +1,6 @@
 package com.vango.pokertable
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.vango.pokertable.card.Card
 import com.vango.pokertable.card.Rank
 import com.vango.pokertable.card.Rank.*
@@ -7,8 +8,10 @@ import com.vango.pokertable.card.Suit
 import com.vango.pokertable.player.Player
 import java.util.stream.Collectors
 
-class PokerTable(private val players: List<Player>, private val dealerCards: List<Card>) {
+class PokerTable(val players: List<Player>,
+                 val dealerCards: List<Card>?) {
 
+    @JsonProperty("winners")
     fun getWinners(): List<Player> {
         val playersWithARoyalFlush = getPlayersWithStraightFlush(true)
         if (playersWithARoyalFlush.size == 1)
@@ -107,7 +110,9 @@ class PokerTable(private val players: List<Player>, private val dealerCards: Lis
 
     private fun getPlayersCardsInPlay(player: Player): MutableList<Card> {
         val cardsInPlay = mutableListOf<Card>()
-        cardsInPlay.addAll(dealerCards)
+        if (dealerCards != null) {
+            cardsInPlay.addAll(dealerCards)
+        }
         cardsInPlay.add(player.card1)
         cardsInPlay.add(player.card2)
         return cardsInPlay;
