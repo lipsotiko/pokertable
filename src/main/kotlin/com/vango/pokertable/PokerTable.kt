@@ -16,36 +16,52 @@ class PokerTable(val players: List<Player>,
         val playersWithARoyalFlush = getPlayersWithStraightFlush(true)
         if (playersWithARoyalFlush.size == 1)
             return playersWithARoyalFlush
+        else if (playersWithARoyalFlush.size > 1)
+            return getPlayerWithHighestCard(playersWithARoyalFlush)
 
         val playersWithStraightFlush = getPlayersWithStraightFlush(false)
         if (playersWithStraightFlush.size == 1)
             return playersWithStraightFlush
+        else if (playersWithStraightFlush.size > 1)
+            return getPlayerWithHighestCard(playersWithStraightFlush)
 
         val playersWithFourOfAKind = getPlayersWithCardsOfAKind(4)
         if (playersWithFourOfAKind.size == 1)
             return playersWithFourOfAKind
+        else if (playersWithFourOfAKind.size > 1)
+            return getPlayerWithHighestCard(playersWithFourOfAKind)
 
         val playersWithFullHouse = getPlayersWithFullHouse()
         if (playersWithFullHouse.size == 1)
             return playersWithFullHouse
+        else if (playersWithFullHouse.size > 1)
+            return getPlayerWithHighestCard(playersWithFullHouse)
 
         val playersWithFlush = getPlayersWithFlush()
         if (playersWithFlush.size == 1)
             return playersWithFlush
+        else if (playersWithFlush.size > 1)
+            return getPlayerWithHighestCard(playersWithFlush)
 
         val playersWithStraight = getPlayersWithStraight(null)
         if (playersWithStraight.size == 1)
             return playersWithStraight
+        else if (playersWithStraight.size > 1)
+            return getPlayerWithHighestCard(playersWithStraight)
 
         val playersWithThreeOfAKind = getPlayersWithCardsOfAKind(3)
         if (playersWithThreeOfAKind.size == 1)
             return playersWithThreeOfAKind
+        else if (playersWithThreeOfAKind.size > 1)
+            return getPlayerWithHighestCard(playersWithThreeOfAKind)
 
         val playersWithPair = getPlayersWithCardsOfAKind(2)
         if (playersWithPair.size == 1)
             return playersWithPair
+        else if (playersWithPair.size > 1)
+            return getPlayerWithHighestCard(playersWithPair)
 
-        return getPlayerWithHighestCard()
+        return getPlayerWithHighestCard(null)
     }
 
     private fun getPlayersWithStraightFlush(withAceHigh: Boolean): List<Player> {
@@ -102,8 +118,9 @@ class PokerTable(val players: List<Player>,
         }.collect(Collectors.toList())
     }
 
-    private fun getPlayerWithHighestCard(): List<Player> {
+    private fun getPlayerWithHighestCard(filteredPlayers: List<Player>?): List<Player> {
         val highestRank: Rank
+        val players = filteredPlayers ?: players
         highestRank = players.maxBy { player -> player.getHighestCard().rank.ranking }?.getHighestCard()!!.rank
         return players.filter { player -> player.getHighestCard().rank == highestRank }
     }
