@@ -4,7 +4,7 @@ import com.vango.pokertable.card.Card
 import com.vango.pokertable.card.Rank.*
 import com.vango.pokertable.card.Suit.*
 import com.vango.pokertable.player.Player
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class PokerTableTest {
@@ -65,7 +65,7 @@ class PokerTableTest {
                 Card(FOUR, DIAMOND),
                 Card(FIVE, SPADE),
                 Card(SIX, SPADE)
-            )
+        )
         )
         assertEquals(player1, table.getWinners()[0])
     }
@@ -80,7 +80,7 @@ class PokerTableTest {
                 Card(FOUR, DIAMOND),
                 Card(FIVE, SPADE),
                 Card(JACK, SPADE)
-            )
+        )
         )
         assertEquals(player1, table.getWinners()[0])
     }
@@ -105,7 +105,7 @@ class PokerTableTest {
                 Card(FIVE, SPADE),
                 Card(FIVE, DIAMOND),
                 Card(FIVE, HEART)
-            )
+        )
         )
         assertEquals(player1, table.getWinners()[0])
     }
@@ -121,7 +121,7 @@ class PokerTableTest {
                 Card(FIVE, SPADE),
                 Card(FIVE, DIAMOND),
                 Card(FIVE, HEART)
-            )
+        )
         )
         assertEquals(player1, table.getWinners()[0])
     }
@@ -137,7 +137,7 @@ class PokerTableTest {
                 Card(FOUR, CLUB),
                 Card(FIVE, CLUB),
                 Card(SIX, CLUB)
-            )
+        )
         )
         assertEquals(player1, table.getWinners()[0])
     }
@@ -153,7 +153,7 @@ class PokerTableTest {
                 Card(TEN, DIAMOND),
                 Card(NINE, DIAMOND),
                 Card(FIVE, DIAMOND)
-            )
+        )
         )
         assertEquals(player1, table.getWinners()[0])
     }

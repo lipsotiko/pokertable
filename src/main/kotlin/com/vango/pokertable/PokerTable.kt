@@ -3,7 +3,7 @@ package com.vango.pokertable
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.vango.pokertable.card.Card
 import com.vango.pokertable.card.Rank
-import com.vango.pokertable.card.Rank.*
+import com.vango.pokertable.card.Rank.ACE
 import com.vango.pokertable.card.Suit
 import com.vango.pokertable.player.Player
 import java.util.stream.Collectors
@@ -48,8 +48,8 @@ class PokerTable(val players: List<Player>,
         return getPlayerWithHighestCard()
     }
 
-    private fun getPlayersWithStraightFlush(withAceHigh: Boolean): List<Player>{
-        for(suit in Suit.values()) {
+    private fun getPlayersWithStraightFlush(withAceHigh: Boolean): List<Player> {
+        for (suit in Suit.values()) {
             val playersWithSuitedStraight = getPlayersWithStraight(suit)
             val playersWithStraightFlush = playersWithSuitedStraight.stream().filter { player ->
                 if (withAceHigh)
@@ -81,7 +81,7 @@ class PokerTable(val players: List<Player>,
         return players.stream().filter { player ->
             val cardsInPlay = getPlayersCardsInPlay(player)
             val rankingsInPlay = cardsInPlay
-                    .filter { card -> if (suit != null) card.suit == suit else true}
+                    .filter { card -> if (suit != null) card.suit == suit else true }
                     .groupingBy { card -> card.rank }.eachCount()
             var i = 0
             for (r in Rank.values()) {
