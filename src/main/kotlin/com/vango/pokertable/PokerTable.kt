@@ -73,7 +73,7 @@ class PokerTable(val players: List<Player>,
         return players.stream().filter { player ->
             val cardsInPlay = getPlayersCardsInPlay(player)
             val suitsInPlay = cardsInPlay.groupingBy { card -> card.suit.suit }.eachCount()
-            suitsInPlay.filter { (k, v) -> v > 5 }.isNotEmpty()
+            suitsInPlay.filter { (_, v) -> v > 5 }.isNotEmpty()
         }.collect(Collectors.toList())
     }
 
