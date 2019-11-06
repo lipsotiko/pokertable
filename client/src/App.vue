@@ -18,6 +18,8 @@
         <card :rank="card.rank" :suit="card.suit" />
       </li>
     </ul>
+    <h2 v-if="dealerCards.length === 5">Winning Hand</h2>
+    <p>{{winningHand}}</p>
   </div>
 </template>
 
@@ -52,7 +54,8 @@ export default {
       cards: null,
       players: [],
       cardIndex: 0,
-      dealerCards: []
+      dealerCards: [],
+      winningHand: null
     };
   },
   async created() {
@@ -117,6 +120,7 @@ export default {
       return pokerTableResults;
     },
     assignWinners(pokerTableResults) {
+      this.winningHand = pokerTableResults.winType;
       this.players = this.players.map(player => {
         player.isWinner =
           pokerTableResults.winners.filter(

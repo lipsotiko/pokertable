@@ -17,6 +17,7 @@ class PokerTableTest {
         val player3 = Player(Card(KING, CLUB), Card(FIVE, CLUB))
         val table = PokerTable(listOf(player1, player2, player3), emptyList())
         table.evaluateWinners()
+        assertEquals(1, table.winners().size)
         assertEquals(player1, table.winners()[0])
         assertEquals(HIGH_CARD, table.winType())
     }
@@ -30,6 +31,18 @@ class PokerTableTest {
         table.evaluateWinners()
         assertEquals(2, table.winners.size)
         assertEquals(FOUR, table.winners[0].card2.rank)
+        assertEquals(HIGH_CARD, table.winType())
+    }
+
+    @Test
+    fun kicker_breaks_tie() {
+        val player1 = Player(Card(ACE, CLUB), Card(KING, CLUB))
+        val player2 = Player(Card(ACE, CLUB), Card(JACK, CLUB))
+        val player3 = Player(Card(ACE, CLUB), Card(TWO, CLUB))
+        val table = PokerTable(listOf(player1, player2, player3), emptyList())
+        table.evaluateWinners()
+        assertEquals(1, table.winners().size)
+        assertEquals(player1, table.winners()[0])
         assertEquals(HIGH_CARD, table.winType())
     }
 
