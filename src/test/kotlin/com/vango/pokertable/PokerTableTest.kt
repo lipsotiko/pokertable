@@ -16,9 +16,9 @@ class PokerTableTest {
         val player2 = Player(Card(THREE, CLUB), Card(FOUR, CLUB))
         val player3 = Player(Card(KING, CLUB), Card(FIVE, CLUB))
         val table = PokerTable(listOf(player1, player2, player3), emptyList())
-        table.evaluateWinners()
-        assertEquals(1, table.winners().size)
-        assertEquals(player1, table.winners()[0])
+        table.evaluate()
+        assertEquals(1, table.playerResults().size)
+        assertEquals(player1, table.playerResults()[0])
         assertEquals(HIGH_CARD, table.winType())
     }
 
@@ -28,9 +28,9 @@ class PokerTableTest {
         val player2 = Player(Card(THREE, SPADE), Card(FOUR, DIAMOND))
         val player3 = Player(Card(TWO, CLUB), Card(THREE, SPADE))
         val table = PokerTable(listOf(player1, player2, player3), emptyList())
-        table.evaluateWinners()
-        assertEquals(2, table.winners.size)
-        assertEquals(FOUR, table.winners[0].card2.rank)
+        table.evaluate()
+        assertEquals(2, table.playerResults.size)
+        assertEquals(FOUR, table.playerResults[0].card2.rank)
         assertEquals(HIGH_CARD, table.winType())
     }
 
@@ -40,9 +40,9 @@ class PokerTableTest {
         val player2 = Player(Card(ACE, CLUB), Card(JACK, CLUB))
         val player3 = Player(Card(ACE, CLUB), Card(TWO, CLUB))
         val table = PokerTable(listOf(player1, player2, player3), emptyList())
-        table.evaluateWinners()
-        assertEquals(1, table.winners().size)
-        assertEquals(player1, table.winners()[0])
+        table.evaluate()
+        assertEquals(1, table.playerResults().size)
+        assertEquals(player1, table.playerResults()[0])
         assertEquals(HIGH_CARD, table.winType())
     }
 
@@ -51,8 +51,8 @@ class PokerTableTest {
         val player1 = Player(Card(ACE, CLUB), Card(TWO, CLUB))
         val player2 = Player(Card(THREE, DIAMOND), Card(FIVE, DIAMOND))
         val table = PokerTable(listOf(player1, player2), listOf(Card(TWO, HEART)))
-        table.evaluateWinners()
-        assertEquals(player1, table.winners()[0])
+        table.evaluate()
+        assertEquals(player1, table.playerResults()[0])
         assertEquals(PAIR, table.winType())
     }
 
@@ -62,9 +62,9 @@ class PokerTableTest {
         val player2 = Player(Card(SEVEN, CLUB), Card(SEVEN, HEART))
         val players: List<Player> = listOf(player1, player2)
         val table = PokerTable(players, listOf(Card(SIX, HEART), Card(FIVE, DIAMOND)))
-        table.evaluateWinners()
-        assertEquals(1, table.winners().size)
-        assertEquals(player1, table.winners()[0])
+        table.evaluate()
+        assertEquals(1, table.playerResults().size)
+        assertEquals(player1, table.playerResults()[0])
         assertEquals(TWO_PAIR, table.winType())
     }
 
@@ -74,8 +74,8 @@ class PokerTableTest {
         val player2 = Player(Card(SIX, CLUB), Card(FIVE, HEART))
         val players: List<Player> = listOf(player1, player2)
         val table = PokerTable(players, listOf(Card(SIX, HEART), Card(FIVE, DIAMOND)))
-        table.evaluateWinners()
-        assertEquals(2, table.winners().size)
+        table.evaluate()
+        assertEquals(2, table.playerResults().size)
         assertEquals(TWO_PAIR, table.winType())
     }
 
@@ -85,8 +85,8 @@ class PokerTableTest {
         val player2 = Player(Card(THREE, DIAMOND), Card(FOUR, SPADE))
         val players: List<Player> = listOf(player1, player2)
         val table = PokerTable(players, listOf(Card(THREE, HEART), Card(FOUR, DIAMOND), Card(TWO, SPADE)))
-        table.evaluateWinners()
-        assertEquals(player1, table.winners()[0])
+        table.evaluate()
+        assertEquals(player1, table.playerResults()[0])
         assertEquals(THREE_OF_A_KIND, table.winType())
     }
 
@@ -102,8 +102,8 @@ class PokerTableTest {
                 Card(SIX, SPADE)
         )
         )
-        table.evaluateWinners()
-        assertEquals(player1, table.winners()[0])
+        table.evaluate()
+        assertEquals(player1, table.playerResults()[0])
         assertEquals(STRAIGHT, table.winType())
     }
 
@@ -119,8 +119,8 @@ class PokerTableTest {
                 Card(JACK, SPADE)
         )
         )
-        table.evaluateWinners()
-        assertEquals(player1, table.winners()[0])
+        table.evaluate()
+        assertEquals(player1, table.playerResults()[0])
         assertEquals(STRAIGHT, table.winType())
     }
 
@@ -130,8 +130,8 @@ class PokerTableTest {
         val player2 = Player(Card(TWO, CLUB), Card(THREE, HEART))
         val players: List<Player> = listOf(player1, player2)
         val table = PokerTable(players, listOf(Card(TWO, SPADE), Card(TEN, SPADE), Card(FIVE, SPADE), Card(SIX, SPADE)))
-        table.evaluateWinners()
-        assertEquals(player1, table.winners()[0])
+        table.evaluate()
+        assertEquals(player1, table.playerResults()[0])
         assertEquals(FLUSH, table.winType())
     }
 
@@ -148,8 +148,8 @@ class PokerTableTest {
                 Card(FIVE, HEART)
         )
         )
-        table.evaluateWinners()
-        assertEquals(player1, table.winners()[0])
+        table.evaluate()
+        assertEquals(player1, table.playerResults()[0])
         assertEquals(FULL_HOUSE, table.winType())
     }
 
@@ -166,8 +166,8 @@ class PokerTableTest {
                 Card(FIVE, HEART)
         )
         )
-        table.evaluateWinners()
-        assertEquals(player1, table.winners()[0])
+        table.evaluate()
+        assertEquals(player1, table.playerResults()[0])
         assertEquals(FOUR_OF_A_KIND, table.winType())
     }
 
@@ -184,8 +184,8 @@ class PokerTableTest {
                 Card(SIX, CLUB)
         )
         )
-        table.evaluateWinners()
-        assertEquals(player1, table.winners()[0])
+        table.evaluate()
+        assertEquals(player1, table.playerResults()[0])
         assertEquals(STRAIGHT_FLUSH, table.winType())
     }
 
@@ -202,8 +202,8 @@ class PokerTableTest {
                 Card(FIVE, DIAMOND)
         )
         )
-        table.evaluateWinners()
-        assertEquals(player1, table.winners()[0])
+        table.evaluate()
+        assertEquals(player1, table.playerResults()[0])
         assertEquals(ROYAL_FLUSH, table.winType())
     }
 }

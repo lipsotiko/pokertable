@@ -1,6 +1,6 @@
 package com.vango.pokertable.card
 
-class Card(val rank: Rank, val suit: Suit) {
+open class Card(val rank: Rank, val suit: Suit) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
