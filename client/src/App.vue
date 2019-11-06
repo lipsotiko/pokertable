@@ -4,7 +4,7 @@
       <h1>Vango's Poker Table</h1>
     </div>
     <input v-model="numberOfPlayers" type="number" placeholder="Input number of players" />
-    <input v-if="dealerCards.length < 5" type="button" value="Deal Cards" @click="dealCards()" />
+    <input v-if="dealerCards.length < 5" type="button" :value="dealButtonText" @click="dealCards()" />
     <input v-else type="button" value="Reset" @click="restCards()" />
     <h2 v-if="players.length > 0">Player's Hands</h2>
     <ul>
@@ -59,7 +59,8 @@ export default {
       players: [],
       cardIndex: 0,
       dealerCards: [],
-      winningHand: null
+      winningHand: null,
+      dealButtonText: "Deal Cards"
     };
   },
   async created() {
@@ -78,14 +79,18 @@ export default {
         for (let i = 0; i < this.players.length; i++) {
           this.players[i].card2 = this.cards[this.cardIndex++];
         }
+
+        this.dealButtonText = "Deal Flop";
       } else if (this.players.length > 0 && this.dealerCards.length === 0) {
         //deal the flop
         for (let i = 0; i < 3; i++) {
           this.dealerCards.push(this.cards[this.cardIndex++]);
         }
+        this.dealButtonText = "Deal Turn";
       } else if (this.dealerCards.length === 3) {
         //deal the turn
         this.dealerCards.push(this.cards[this.cardIndex++]);
+        this.dealButtonText = "Deal River";
       } else if (this.dealerCards.length === 4) {
         //deal the river
         this.dealerCards.push(this.cards[this.cardIndex++]);
@@ -102,6 +107,7 @@ export default {
       this.dealerCards = [];
       this.players = [];
       this.winningHand = null;
+      this.dealButtonText = "Deal Cards";
     },
     async getCards() {
       let cardsResponse = await fetch("/api/cards");

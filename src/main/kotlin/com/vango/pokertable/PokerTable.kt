@@ -105,7 +105,7 @@ class PokerTable(private val players: List<Player>,
         if (winners.isNotEmpty()) return
 
         winType = HIGH_CARD
-        winners = getPlayerWithHighestCard(null)
+        winners = getPlayerWithHighestCard(players)
     }
 
     private fun getPlayersWithTwoPair(): List<Player> {
@@ -171,10 +171,15 @@ class PokerTable(private val players: List<Player>,
     }
 
     private fun getPlayerWithHighestCard(filteredPlayers: List<Player>?): List<Player> {
-        val highestRank: Rank
-        val players = filteredPlayers ?: players
-        highestRank = players.maxBy { player -> player.getHighestCard().rank.ranking }?.getHighestCard()!!.rank
-        return players.filter { player -> player.getHighestCard().rank == highestRank }
+        var highestRank = filteredPlayers?.maxBy { player -> player.getHighestCard().rank.ranking }?.getHighestCard()!!.rank
+        var playersWithHighestRank = filteredPlayers.filter { player -> player.getHighestCard().rank == highestRank }
+        if (playersWithHighestRank.size == 1) return playersWithHighestRank
+
+        highestRank = playersWithHighestRank.maxBy { player -> player.getLowestCard().rank.ranking }!!.getLowestCard().rank
+        playersWithHighestRank = filteredPlayers.filter { player -> player.getLowestCard().rank == highestRank }
+        if (playersWithHighestRank.size == 1) return playersWithHighestRank
+
+        return playersWithHighestRank;
     }
 
     private fun getPlayersCardsInPlay(player: Player): MutableList<Card> {
