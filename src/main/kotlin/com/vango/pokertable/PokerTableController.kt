@@ -12,7 +12,8 @@ class PokerTableController(val deck: Deck) {
 
     @PostMapping("/api/evaluate")
     fun evaluateHands(@RequestBody pokerTable: PokerTable): PokerTable {
-        return pokerTable;
+        pokerTable.evaluateWinners()
+        return pokerTable
     }
 
     @GetMapping("/api/cards")

@@ -1,14 +1,14 @@
 package com.vango.pokertable
 
-enum class WinType(val description: String) {
-    HIGH_CARD("High Card"),
-    PAIR("Pair"),
-    TWO_PAIR("Two Pair"),
-    THREE_OF_A_KIND("Three of a kind"),
-    STRAIGHT("Straight"),
-    FLUSH("Flush"),
-    FULL_HOUSE("Full House"),
-    FOUR_OF_A_KIND("Four of a kind"),
-    STRAIGHT_FLUSH("Straight Flush"),
-    ROYAL_FLUSH("Royal Flush")
+enum class WinType {
+    HIGH_CARD,
+    PAIR,
+    TWO_PAIR,
+    THREE_OF_A_KIND,
+    STRAIGHT,
+    FLUSH,
+    FULL_HOUSE,
+    FOUR_OF_A_KIND,
+    STRAIGHT_FLUSH,
+    ROYAL_FLUSH
 }

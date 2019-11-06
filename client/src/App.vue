@@ -94,6 +94,7 @@ export default {
       this.numberOfPlayers = null;
       this.dealerCards = [];
       this.players = [];
+      this.winningHand = null;
     },
     async getCards() {
       let cardsResponse = await fetch("/api/cards");
