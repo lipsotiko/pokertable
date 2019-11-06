@@ -1,6 +1,8 @@
 <template>
   <div id="app">
-    <h1>Vango's Poker Table</h1>
+    <div>
+      <h1>Vango's Poker Table</h1>
+    </div>
     <input v-model="numberOfPlayers" type="number" placeholder="Input number of players" />
     <input v-if="dealerCards.length < 5" type="button" value="Deal Cards" @click="dealCards()" />
     <input v-else type="button" value="Reset" @click="restCards()" />
@@ -20,6 +22,8 @@
     </ul>
     <h2 v-if="dealerCards.length === 5">Winning Hand</h2>
     <p>{{winningHand}}</p>
+    <hr />
+    <a class="git-url" href="https://github.com/lipsotiko/pokertable">Git</a>
   </div>
 </template>
 
@@ -143,5 +147,3 @@ export default {
 };
 </script>
 
-<style>
-</style>
