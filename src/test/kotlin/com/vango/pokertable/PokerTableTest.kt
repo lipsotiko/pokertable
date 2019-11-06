@@ -43,11 +43,23 @@ class PokerTableTest {
 
     @Test
     fun two_pair_wins() {
-        val player1 = Player(Card(THREE, DIAMOND), Card(THREE, SPADE))
-        val player2 = Player(Card(TWO, CLUB), Card(TWO, HEART))
+        val player1 = Player(Card(SIX, DIAMOND), Card(FIVE, SPADE))
+        val player2 = Player(Card(SEVEN, CLUB), Card(SEVEN, HEART))
         val players: List<Player> = listOf(player1, player2)
-        val table = PokerTable(players, listOf(Card(FOUR, HEART), Card(FOUR, DIAMOND)), null)
+        val table = PokerTable(players, listOf(Card(SIX, HEART), Card(FIVE, DIAMOND)), null)
+        assertEquals(1, table.getWinners().size)
         assertEquals(player1, table.getWinners()[0])
+        assertEquals(TWO_PAIR, table.winType)
+    }
+
+    @Test
+    fun two_pair_ties() {
+        val player1 = Player(Card(SIX, DIAMOND), Card(FIVE, SPADE))
+        val player2 = Player(Card(SIX, CLUB), Card(FIVE, HEART))
+        val players: List<Player> = listOf(player1, player2)
+        val table = PokerTable(players, listOf(Card(SIX, HEART), Card(FIVE, DIAMOND)), null)
+        assertEquals(2, table.getWinners().size)
+        assertEquals(TWO_PAIR, table.winType)
     }
 
     @Test

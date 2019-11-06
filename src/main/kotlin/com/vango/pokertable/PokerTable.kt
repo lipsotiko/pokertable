@@ -64,6 +64,13 @@ class PokerTable(val players: List<Player>,
         else if (playersWithThreeOfAKind.size > 1)
             return getPlayerWithHighestCard(playersWithThreeOfAKind)
 
+        val playersWithTwoPair = getPlayersWithTwoPair()
+        if (playersWithTwoPair.isNotEmpty()) winType = TWO_PAIR
+        if (playersWithTwoPair.size == 1)
+            return playersWithTwoPair
+        else if (playersWithTwoPair.size > 1)
+            return getPlayerWithHighestCard(playersWithTwoPair)
+
         val playersWithPair = getPlayersWithCardsOfAKind(2)
         if (playersWithPair.isNotEmpty()) winType = PAIR
         if (playersWithPair.size == 1)
@@ -73,6 +80,14 @@ class PokerTable(val players: List<Player>,
 
         winType = HIGH_CARD
         return getPlayerWithHighestCard(null)
+    }
+
+    private fun getPlayersWithTwoPair(): List<Player> {
+        return players.filter { player ->
+            val playersCardsInPlay = getPlayersCardsInPlay(player);
+            val rankingsInPlay = playersCardsInPlay.groupingBy { card -> card.rank.ranking }.eachCount()
+            rankingsInPlay.filter { rankingCount -> rankingCount.value >= 2 }.size >= 2
+        }
     }
 
     private fun getPlayersWithStraightFlush(withAceHigh: Boolean): List<Player> {
