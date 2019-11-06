@@ -6,61 +6,72 @@ import com.vango.pokertable.card.Rank
 import com.vango.pokertable.card.Rank.ACE
 import com.vango.pokertable.card.Suit
 import com.vango.pokertable.player.Player
+import com.vango.pokertable.WinType.*
 import java.util.stream.Collectors
 
 class PokerTable(val players: List<Player>,
-                 val dealerCards: List<Card>?) {
+                 val dealerCards: List<Card>?,
+                 var winType: WinType?) {
 
     @JsonProperty("winners")
     fun getWinners(): List<Player> {
         val playersWithARoyalFlush = getPlayersWithStraightFlush(true)
+        if (playersWithARoyalFlush.isNotEmpty()) winType = ROYAL_FLUSH
         if (playersWithARoyalFlush.size == 1)
             return playersWithARoyalFlush
         else if (playersWithARoyalFlush.size > 1)
             return getPlayerWithHighestCard(playersWithARoyalFlush)
 
         val playersWithStraightFlush = getPlayersWithStraightFlush(false)
+        if (playersWithStraightFlush.isNotEmpty()) winType = STRAIGHT_FLUSH
         if (playersWithStraightFlush.size == 1)
             return playersWithStraightFlush
         else if (playersWithStraightFlush.size > 1)
             return getPlayerWithHighestCard(playersWithStraightFlush)
 
         val playersWithFourOfAKind = getPlayersWithCardsOfAKind(4)
+        if (playersWithFourOfAKind.isNotEmpty()) winType = FOUR_OF_A_KIND
         if (playersWithFourOfAKind.size == 1)
             return playersWithFourOfAKind
         else if (playersWithFourOfAKind.size > 1)
             return getPlayerWithHighestCard(playersWithFourOfAKind)
 
         val playersWithFullHouse = getPlayersWithFullHouse()
+        if (playersWithFullHouse.isNotEmpty()) winType = FULL_HOUSE
         if (playersWithFullHouse.size == 1)
             return playersWithFullHouse
         else if (playersWithFullHouse.size > 1)
             return getPlayerWithHighestCard(playersWithFullHouse)
 
         val playersWithFlush = getPlayersWithFlush()
+        if (playersWithFlush.isNotEmpty()) winType = FLUSH
         if (playersWithFlush.size == 1)
             return playersWithFlush
         else if (playersWithFlush.size > 1)
             return getPlayerWithHighestCard(playersWithFlush)
 
         val playersWithStraight = getPlayersWithStraight(null)
+        if (playersWithStraight.isNotEmpty()) winType = STRAIGHT
         if (playersWithStraight.size == 1)
             return playersWithStraight
         else if (playersWithStraight.size > 1)
             return getPlayerWithHighestCard(playersWithStraight)
 
         val playersWithThreeOfAKind = getPlayersWithCardsOfAKind(3)
+        if (playersWithThreeOfAKind.isNotEmpty()) winType = THREE_OF_A_KIND
         if (playersWithThreeOfAKind.size == 1)
             return playersWithThreeOfAKind
         else if (playersWithThreeOfAKind.size > 1)
             return getPlayerWithHighestCard(playersWithThreeOfAKind)
 
         val playersWithPair = getPlayersWithCardsOfAKind(2)
+        if (playersWithPair.isNotEmpty()) winType = PAIR
         if (playersWithPair.size == 1)
             return playersWithPair
         else if (playersWithPair.size > 1)
             return getPlayerWithHighestCard(playersWithPair)
 
+        winType = HIGH_CARD
         return getPlayerWithHighestCard(null)
     }
 
