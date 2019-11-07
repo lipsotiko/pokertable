@@ -19,7 +19,7 @@ class PokerTableTest {
         table.evaluate()
         assertEquals(1, table.playerResults().size)
         assertEquals(player1, table.playerResults()[0])
-        assertEquals(HIGH_CARD, table.winType())
+        assertEquals(HIGHEST_CARD, table.winType())
     }
 
     @Test
@@ -31,19 +31,19 @@ class PokerTableTest {
         table.evaluate()
         assertEquals(2, table.playerResults.size)
         assertEquals(FOUR, table.playerResults[0].card2.rank)
-        assertEquals(HIGH_CARD, table.winType())
+        assertEquals(HIGHEST_CARD, table.winType())
     }
 
     @Test
     fun kicker_breaks_tie() {
         val player1 = Player(Card(ACE, CLUB), Card(KING, CLUB))
-        val player2 = Player(Card(ACE, CLUB), Card(JACK, CLUB))
-        val player3 = Player(Card(ACE, CLUB), Card(TWO, CLUB))
+        val player2 = Player(Card(ACE, HEART), Card(JACK, CLUB))
+        val player3 = Player(Card(ACE, SPADE), Card(TWO, CLUB))
         val table = PokerTable(listOf(player1, player2, player3), emptyList())
         table.evaluate()
         assertEquals(1, table.playerResults().size)
         assertEquals(player1, table.playerResults()[0])
-        assertEquals(HIGH_CARD, table.winType())
+        assertEquals(HIGHEST_CARD, table.winType())
     }
 
     @Test
@@ -76,7 +76,7 @@ class PokerTableTest {
         val table = PokerTable(players, listOf(Card(SIX, HEART), Card(FIVE, DIAMOND)))
         table.evaluate()
         assertEquals(2, table.playerResults().size)
-        assertEquals(TWO_PAIR, table.winType())
+        assertEquals(HIGHEST_CARD, table.winType())
     }
 
     @Test

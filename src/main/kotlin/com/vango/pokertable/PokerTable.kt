@@ -1,20 +1,34 @@
 package com.vango.pokertable
 
-import com.vango.pokertable.card.Card
-import com.vango.pokertable.card.Rank
-import com.vango.pokertable.card.Rank.ACE
-import com.vango.pokertable.card.Suit
-import com.vango.pokertable.player.Player
+
 import com.vango.pokertable.WinType.*
+import com.vango.pokertable.card.Card
 import com.vango.pokertable.player.CardType.*
-import java.util.stream.Collectors
+import com.vango.pokertable.player.Player
 
 class PokerTable(private val players: List<Player>,
                  private val dealerCards: List<Card>) {
 
+    var playerWinProbabilities: MutableList<PlayerWinProbability> = mutableListOf()
     var winType: WinType? = null
     var playerResults: List<Player> = listOf()
-    var playerWinProbabilities: MutableList<PlayerWinProbability> = mutableListOf()
+
+    init {
+        players.forEach { player ->
+            val playerProbability = PlayerWinProbability(player)
+            players.forEach { otherPlayer ->
+                if (player != otherPlayer) {
+                    playerProbability.updateAvailability(otherPlayer.card1, OTHER_PLAYERS)
+                    playerProbability.updateAvailability(otherPlayer.card2, OTHER_PLAYERS)
+                }
+            }
+            playerProbability.updateAvailability(player.card1, PLAYER)
+            playerProbability.updateAvailability(player.card2, PLAYER)
+            dealerCards.forEach { card -> playerProbability.updateAvailability(card, DEALER) }
+            playerProbability.calculateProbabilities()
+            playerWinProbabilities.add(playerProbability)
+        }
+    }
 
     fun winType(): WinType? {
         return winType
@@ -25,185 +39,71 @@ class PokerTable(private val players: List<Player>,
     }
 
     fun evaluate() {
-        players.forEach { player ->
-            val playerProbability = PlayerWinProbability(player)
-            players.forEach { player2 ->
-                playerProbability.updateAvailability(player2.card1, OTHER_PLAYERS)
-                playerProbability.updateAvailability(player2.card2, OTHER_PLAYERS)
-            }
-            playerProbability.updateAvailability(player.card1, PLAYER)
-            playerProbability.updateAvailability(player.card2, PLAYER)
-            dealerCards.forEach { card -> playerProbability.updateAvailability(card, DEALER) }
-            playerProbability.calculateProbabilities()
-            playerWinProbabilities.add(playerProbability)
-        }
-
         val playersWithARoyalFlush = playerWinProbabilities.filter { p -> p.winTypeProbabilities[ROYAL_FLUSH] == 100 }
-        if (playersWithARoyalFlush.isNotEmpty()) winType = ROYAL_FLUSH
-        if (playersWithARoyalFlush.size == 1)
+        if (playersWithARoyalFlush.size == 1) {
+            winType = ROYAL_FLUSH
             playerResults = playersWithARoyalFlush
-        else if (playersWithARoyalFlush.size > 1)
-            playerResults = getPlayerWithHighestCard(playersWithARoyalFlush)
+            return
+        }
 
-        if (playerResults.isNotEmpty()) return
-
-        val playersWithStraightFlush = getPlayersWithStraightFlush(false)
-        if (playersWithStraightFlush.isNotEmpty()) winType = STRAIGHT_FLUSH
-        if (playersWithStraightFlush.size == 1)
+        val playersWithStraightFlush = playerWinProbabilities.filter { p -> p.winTypeProbabilities[STRAIGHT_FLUSH] == 100 }
+        if (playersWithStraightFlush.size == 1) {
+            winType = STRAIGHT_FLUSH
             playerResults = playersWithStraightFlush
-        else if (playersWithStraightFlush.size > 1)
-            playerResults = getPlayerWithHighestCard(playersWithStraightFlush)
+            return
+        }
 
-        if (playerResults.isNotEmpty()) return
-
-        val playersWithFourOfAKind = getPlayersWithCardsOfAKind(4)
-        if (playersWithFourOfAKind.isNotEmpty()) winType = FOUR_OF_A_KIND
-        if (playersWithFourOfAKind.size == 1)
+        val playersWithFourOfAKind = playerWinProbabilities.filter { p -> p.winTypeProbabilities[FOUR_OF_A_KIND] == 100 }
+        if (playersWithFourOfAKind.size == 1) {
+            winType = FOUR_OF_A_KIND
             playerResults = playersWithFourOfAKind
-        else if (playersWithFourOfAKind.size > 1)
-            playerResults = getPlayerWithHighestCard(playersWithFourOfAKind)
+            return
+        }
 
-        if (playerResults.isNotEmpty()) return
-
-        val playersWithFullHouse = getPlayersWithFullHouse()
-        if (playersWithFullHouse.isNotEmpty()) winType = FULL_HOUSE
-        if (playersWithFullHouse.size == 1)
+        val playersWithFullHouse = playerWinProbabilities.filter { p -> p.winTypeProbabilities[FULL_HOUSE] == 100 }
+        if (playersWithFullHouse.size == 1) {
+            winType = FULL_HOUSE
             playerResults = playersWithFullHouse
-        else if (playersWithFullHouse.size > 1)
-            playerResults = getPlayerWithHighestCard(playersWithFullHouse)
+            return
+        }
 
-        if (playerResults.isNotEmpty()) return
-
-        val playersWithFlush = getPlayersWithFlush()
+        val playersWithFlush = playerWinProbabilities.filter { p -> p.winTypeProbabilities[FLUSH] == 100 }
         if (playersWithFlush.isNotEmpty()) winType = FLUSH
-        if (playersWithFlush.size == 1)
+        if (playersWithFlush.size == 1) {
             playerResults = playersWithFlush
-        else if (playersWithFlush.size > 1)
-            playerResults = getPlayerWithHighestCard(playersWithFlush)
+            return
+        }
 
-        if (playerResults.isNotEmpty()) return
-
-        val playersWithStraight = getPlayersWithStraight(null)
-        if (playersWithStraight.isNotEmpty()) winType = STRAIGHT
-        if (playersWithStraight.size == 1)
+        val playersWithStraight = playerWinProbabilities.filter { p -> p.winTypeProbabilities[STRAIGHT] == 100 }
+        if (playersWithStraight.size == 1) {
+            winType = STRAIGHT
             playerResults = playersWithStraight
-        else if (playersWithStraight.size > 1)
-            playerResults = getPlayerWithHighestCard(playersWithStraight)
+            return
+        }
 
-        if (playerResults.isNotEmpty()) return
-
-        val playersWithThreeOfAKind = getPlayersWithCardsOfAKind(3)
-        if (playersWithThreeOfAKind.isNotEmpty()) winType = THREE_OF_A_KIND
-        if (playersWithThreeOfAKind.size == 1)
+        val playersWithThreeOfAKind = playerWinProbabilities.filter { p -> p.winTypeProbabilities[THREE_OF_A_KIND] == 100 }
+        if (playersWithThreeOfAKind.size == 1) {
+            winType = THREE_OF_A_KIND
             playerResults = playersWithThreeOfAKind
-        else if (playersWithThreeOfAKind.size > 1)
-            playerResults = getPlayerWithHighestCard(playersWithThreeOfAKind)
+            return
+        }
 
-        if (playerResults.isNotEmpty()) return
-
-        val playersWithTwoPair = getPlayersWithTwoPair()
-        if (playersWithTwoPair.isNotEmpty()) winType = TWO_PAIR
-        if (playersWithTwoPair.size == 1)
+        val playersWithTwoPair = playerWinProbabilities.filter { p -> p.winTypeProbabilities[TWO_PAIR] == 100 }
+        if (playersWithTwoPair.size == 1) {
+            winType = TWO_PAIR
             playerResults = playersWithTwoPair
-        else if (playersWithTwoPair.size > 1)
-            playerResults = getPlayerWithHighestCard(playersWithTwoPair)
+            return
+        }
 
-        if (playerResults.isNotEmpty()) return
-
-        val playersWithPair = getPlayersWithCardsOfAKind(2)
-        if (playersWithPair.isNotEmpty()) winType = PAIR
-        if (playersWithPair.size == 1)
+        val playersWithPair = playerWinProbabilities.filter { p -> p.winTypeProbabilities[PAIR] == 100 }
+        if (playersWithPair.size == 1) {
+            winType = PAIR
             playerResults = playersWithPair
-        else if (playersWithPair.size > 1)
-            playerResults = getPlayerWithHighestCard(playersWithPair)
-
-        if (playerResults.isNotEmpty()) return
-
-        winType = HIGH_CARD
-        playerResults = getPlayerWithHighestCard(players)
-    }
-
-    private fun getPlayersWithTwoPair(): List<Player> {
-        return players.filter { player ->
-            val playersCardsInPlay = getPlayersCardsInPlay(player);
-            val rankingsInPlay = playersCardsInPlay.groupingBy { card -> card.rank.ranking }.eachCount()
-            rankingsInPlay.filter { rankingCount -> rankingCount.value >= 2 }.size >= 2
+            return
         }
+
+        winType = HIGHEST_CARD
+        playerResults = playerWinProbabilities.filter { p -> p.winTypeProbabilities[HIGHEST_CARD] == 100 }
     }
 
-    private fun getPlayersWithStraightFlush(withAceHigh: Boolean): List<Player> {
-        for (suit in Suit.values()) {
-            val playersWithSuitedStraight = getPlayersWithStraight(suit)
-            val playersWithStraightFlush = playersWithSuitedStraight.stream().filter { player ->
-                if (withAceHigh)
-                    getPlayersCardsInPlay(player).contains(Card(ACE, suit))
-                else
-                    !getPlayersCardsInPlay(player).contains(Card(ACE, suit))
-            }.collect(Collectors.toList())
-            if (playersWithStraightFlush.isNotEmpty()) return playersWithStraightFlush
-        }
-        return emptyList()
-    }
-
-    private fun getPlayersWithFullHouse(): List<Player> {
-        return players.stream().filter { player ->
-            getPlayersWithCardsOfAKind(2).contains(player) &&
-                    getPlayersWithCardsOfAKind(3).contains(player)
-        }.collect(Collectors.toList())
-    }
-
-    private fun getPlayersWithFlush(): List<Player> {
-        return players.stream().filter { player ->
-            val cardsInPlay = getPlayersCardsInPlay(player)
-            val suitsInPlay = cardsInPlay.groupingBy { card -> card.suit.suit }.eachCount()
-            suitsInPlay.filter { (_, v) -> v > 5 }.isNotEmpty()
-        }.collect(Collectors.toList())
-    }
-
-    private fun getPlayersWithStraight(suit: Suit?): List<Player> {
-        return players.stream().filter { player ->
-            val cardsInPlay = getPlayersCardsInPlay(player)
-            val rankingsInPlay = cardsInPlay
-                    .filter { card -> if (suit != null) card.suit == suit else true }
-                    .groupingBy { card -> card.rank }.eachCount()
-            var i = 0
-            for (r in Rank.values()) {
-                if (rankingsInPlay.contains(r)) i++
-                else i = 0
-                if (i == 5) break
-            }
-            if (rankingsInPlay.contains(ACE)) i++
-            i >= 5
-        }.collect(Collectors.toList())
-    }
-
-    private fun getPlayersWithCardsOfAKind(ofAKind: Int): List<Player> {
-        return players.stream().filter { player ->
-            val cardsInPlay = getPlayersCardsInPlay(player)
-            val rankingsInPlay = cardsInPlay.groupingBy { card -> card.rank.ranking }.eachCount()
-            rankingsInPlay.containsValue(ofAKind)
-        }.collect(Collectors.toList())
-    }
-
-    private fun getPlayerWithHighestCard(filteredPlayers: List<Player>?): List<Player> {
-        var highestRank = filteredPlayers?.maxBy { player -> player.getHighestCard().rank.ranking }?.getHighestCard()!!.rank
-        var playersWithHighestRank = filteredPlayers.filter { player -> player.getHighestCard().rank == highestRank }
-        if (playersWithHighestRank.size == 1) return playersWithHighestRank
-
-        highestRank = playersWithHighestRank.maxBy { player -> player.getLowestCard().rank.ranking }!!.getLowestCard().rank
-        playersWithHighestRank = filteredPlayers.filter { player -> player.getLowestCard().rank == highestRank }
-        if (playersWithHighestRank.size == 1) return playersWithHighestRank
-
-        return playersWithHighestRank;
-    }
-
-    private fun getPlayersCardsInPlay(player: Player): MutableList<Card> {
-        val cardsInPlay = mutableListOf<Card>()
-        if (dealerCards != null) {
-            cardsInPlay.addAll(dealerCards)
-        }
-        cardsInPlay.add(player.card1)
-        cardsInPlay.add(player.card2)
-        return cardsInPlay;
-    }
 }

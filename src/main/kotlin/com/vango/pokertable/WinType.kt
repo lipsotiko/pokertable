@@ -1,7 +1,7 @@
 package com.vango.pokertable
 
 enum class WinType {
-    HIGH_CARD,
+    HIGHEST_CARD,
     PAIR,
     TWO_PAIR,
     THREE_OF_A_KIND,
