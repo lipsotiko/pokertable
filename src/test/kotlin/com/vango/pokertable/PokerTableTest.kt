@@ -16,9 +16,9 @@ class PokerTableTest {
         val player2 = Player(Card(THREE, CLUB), Card(FOUR, CLUB))
         val player3 = Player(Card(KING, CLUB), Card(FIVE, CLUB))
         val table = PokerTable(listOf(player1, player2, player3), emptyList())
-        table.evaluate()
-        assertEquals(1, table.playerResults().size)
-        assertEquals(player1, table.playerResults()[0])
+        val filteredResults = table.generateResults().filter { p -> p.overallProbability == 100 }
+        assertEquals(1, filteredResults.size)
+        assertEquals(player1, filteredResults[0])
         assertEquals(HIGHEST_CARD, table.winType())
     }
 
@@ -28,9 +28,9 @@ class PokerTableTest {
         val player2 = Player(Card(THREE, SPADE), Card(FOUR, DIAMOND))
         val player3 = Player(Card(TWO, CLUB), Card(THREE, SPADE))
         val table = PokerTable(listOf(player1, player2, player3), emptyList())
-        table.evaluate()
-        assertEquals(2, table.playerResults.size)
-        assertEquals(FOUR, table.playerResults[0].card2.rank)
+        val filteredResults = table.generateResults().filter { p -> p.overallProbability == 100 }
+        assertEquals(2, filteredResults.size)
+        assertEquals(FOUR, filteredResults[0].card2.rank)
         assertEquals(HIGHEST_CARD, table.winType())
     }
 
@@ -40,9 +40,9 @@ class PokerTableTest {
         val player2 = Player(Card(ACE, HEART), Card(JACK, CLUB))
         val player3 = Player(Card(ACE, SPADE), Card(TWO, CLUB))
         val table = PokerTable(listOf(player1, player2, player3), emptyList())
-        table.evaluate()
-        assertEquals(1, table.playerResults().size)
-        assertEquals(player1, table.playerResults()[0])
+        val filteredResults = table.generateResults().filter { p -> p.overallProbability == 100 }
+        assertEquals(1, filteredResults.size)
+        assertEquals(player1, filteredResults[0])
         assertEquals(HIGHEST_CARD, table.winType())
     }
 
@@ -51,8 +51,7 @@ class PokerTableTest {
         val player1 = Player(Card(ACE, CLUB), Card(TWO, CLUB))
         val player2 = Player(Card(THREE, DIAMOND), Card(FIVE, DIAMOND))
         val table = PokerTable(listOf(player1, player2), listOf(Card(TWO, HEART)))
-        table.evaluate()
-        assertEquals(player1, table.playerResults()[0])
+        assertEquals(player1, table.generateResults().filter { p -> p.overallProbability == 100 }[0])
         assertEquals(PAIR, table.winType())
     }
 
@@ -62,9 +61,9 @@ class PokerTableTest {
         val player2 = Player(Card(SEVEN, CLUB), Card(SEVEN, HEART))
         val players: List<Player> = listOf(player1, player2)
         val table = PokerTable(players, listOf(Card(SIX, HEART), Card(FIVE, DIAMOND)))
-        table.evaluate()
-        assertEquals(1, table.playerResults().size)
-        assertEquals(player1, table.playerResults()[0])
+        val filteredResults = table.generateResults().filter { p -> p.overallProbability == 100 }
+        assertEquals(1, filteredResults.size)
+        assertEquals(player1, filteredResults[0])
         assertEquals(TWO_PAIR, table.winType())
     }
 
@@ -74,9 +73,8 @@ class PokerTableTest {
         val player2 = Player(Card(SIX, CLUB), Card(FIVE, HEART))
         val players: List<Player> = listOf(player1, player2)
         val table = PokerTable(players, listOf(Card(SIX, HEART), Card(FIVE, DIAMOND)))
-        table.evaluate()
-        assertEquals(2, table.playerResults().size)
-        assertEquals(HIGHEST_CARD, table.winType())
+        assertEquals(2, table.generateResults().filter { p -> p.overallProbability == 100 }.size)
+        assertEquals(TWO_PAIR, table.winType())
     }
 
     @Test
@@ -85,8 +83,7 @@ class PokerTableTest {
         val player2 = Player(Card(THREE, DIAMOND), Card(FOUR, SPADE))
         val players: List<Player> = listOf(player1, player2)
         val table = PokerTable(players, listOf(Card(THREE, HEART), Card(FOUR, DIAMOND), Card(TWO, SPADE)))
-        table.evaluate()
-        assertEquals(player1, table.playerResults()[0])
+        assertEquals(player1, table.generateResults().filter { p -> p.overallProbability == 100 }[0])
         assertEquals(THREE_OF_A_KIND, table.winType())
     }
 
@@ -102,8 +99,7 @@ class PokerTableTest {
                 Card(SIX, SPADE)
         )
         )
-        table.evaluate()
-        assertEquals(player1, table.playerResults()[0])
+        assertEquals(player1, table.generateResults().filter { p -> p.overallProbability == 100 }[0])
         assertEquals(STRAIGHT, table.winType())
     }
 
@@ -119,8 +115,7 @@ class PokerTableTest {
                 Card(JACK, SPADE)
         )
         )
-        table.evaluate()
-        assertEquals(player1, table.playerResults()[0])
+        assertEquals(player1, table.generateResults().filter { p -> p.overallProbability == 100 }[0])
         assertEquals(STRAIGHT, table.winType())
     }
 
@@ -130,8 +125,7 @@ class PokerTableTest {
         val player2 = Player(Card(TWO, CLUB), Card(THREE, HEART))
         val players: List<Player> = listOf(player1, player2)
         val table = PokerTable(players, listOf(Card(TWO, SPADE), Card(TEN, SPADE), Card(FIVE, SPADE), Card(SIX, SPADE)))
-        table.evaluate()
-        assertEquals(player1, table.playerResults()[0])
+        assertEquals(player1, table.generateResults().filter { p -> p.overallProbability == 100 }[0])
         assertEquals(FLUSH, table.winType())
     }
 
@@ -148,8 +142,7 @@ class PokerTableTest {
                 Card(FIVE, HEART)
         )
         )
-        table.evaluate()
-        assertEquals(player1, table.playerResults()[0])
+        assertEquals(player1, table.generateResults().filter { p -> p.overallProbability == 100 }[0])
         assertEquals(FULL_HOUSE, table.winType())
     }
 
@@ -166,8 +159,7 @@ class PokerTableTest {
                 Card(FIVE, HEART)
         )
         )
-        table.evaluate()
-        assertEquals(player1, table.playerResults()[0])
+        assertEquals(player1, table.generateResults().filter { p -> p.overallProbability == 100 }[0])
         assertEquals(FOUR_OF_A_KIND, table.winType())
     }
 
@@ -184,8 +176,7 @@ class PokerTableTest {
                 Card(SIX, CLUB)
         )
         )
-        table.evaluate()
-        assertEquals(player1, table.playerResults()[0])
+        assertEquals(player1, table.generateResults().filter { p -> p.overallProbability == 100 }[0])
         assertEquals(STRAIGHT_FLUSH, table.winType())
     }
 
@@ -202,8 +193,7 @@ class PokerTableTest {
                 Card(FIVE, DIAMOND)
         )
         )
-        table.evaluate()
-        assertEquals(player1, table.playerResults()[0])
+        assertEquals(player1, table.generateResults().filter { p -> p.overallProbability == 100 }[0])
         assertEquals(ROYAL_FLUSH, table.winType())
     }
 }

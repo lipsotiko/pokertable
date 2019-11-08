@@ -13,6 +13,7 @@ class PlayerWinProbability(player: Player) : Player(player.card1, player.card2) 
 
     private val probabilityGrid = mutableMapOf<Suit, MutableMap<Rank, CardStatus>>()
     val winTypeProbabilities = mutableMapOf<WinType, Int>()
+    var overallProbability = 0
 
     init {
         for (suit in Suit.values()) {
@@ -23,7 +24,7 @@ class PlayerWinProbability(player: Player) : Player(player.card1, player.card2) 
         }
     }
 
-    fun updateAvailability(card: Card, cardType: CardType) {
+    fun updateCardStatus(card: Card, cardType: CardType) {
         probabilityGrid[card.suit]!![card.rank]!!.setType(cardType)
     }
 
@@ -40,7 +41,7 @@ class PlayerWinProbability(player: Player) : Player(player.card1, player.card2) 
     }
 
     private fun evaluateFlush() {
-        if(getPlayerAndDealerCards().groupingBy { card -> card.suit.suit }.eachCount().filter { (_, v) -> v >= 5 }.isNotEmpty())
+        if (getPlayerAndDealerCards().groupingBy { card -> card.suit.suit }.eachCount().filter { (_, v) -> v >= 5 }.isNotEmpty())
             winTypeProbabilities[FLUSH] = 100
     }
 
