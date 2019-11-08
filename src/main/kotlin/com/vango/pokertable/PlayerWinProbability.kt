@@ -12,7 +12,7 @@ import com.vango.pokertable.player.Player
 class PlayerWinProbability(player: Player) : Player(player.card1, player.card2) {
 
     private val probabilityGrid = mutableMapOf<Suit, MutableMap<Rank, CardStatus>>()
-    val winTypeProbabilities = mutableMapOf<WinType, Int>()
+    val winTypeProbabilities = mutableMapOf<WinType, Double>()
     var overallProbability = 0
 
     init {
@@ -29,45 +29,52 @@ class PlayerWinProbability(player: Player) : Player(player.card1, player.card2) 
     }
 
     fun calculateProbabilities() {
-        evaluateStraightAndRoyalFlush()
-        evaluateFourOfAKind()
-        evaluateFullHouse()
-        evaluateFlush()
-        evaluateStraight(null)
-        evaluateThreeOfAKind()
-        evaluateTwoPair()
-        evaluatePair()
         evaluateHighestCard()
+        evaluatePair()
+        evaluateTwoPair()
+        evaluateThreeOfAKind()
+        evaluateStraight(null)
+        evaluateFlush()
+        evaluateFullHouse()
+        evaluateFourOfAKind()
+        evaluateStraightAndRoyalFlush()
     }
 
     private fun evaluateFlush() {
-        if (getPlayerAndDealerCards().groupingBy { card -> card.suit.suit }.eachCount().filter { (_, v) -> v >= 5 }.isNotEmpty())
-            winTypeProbabilities[FLUSH] = 100
+        val suitCounts = getPlayerAndDealerCards().groupingBy { it.suit.suit }.eachCount()
+        if (suitCounts.filter { (_, v) -> v >= 5 }.isNotEmpty())
+            winTypeProbabilities[FLUSH] = 100.0
+        else {
+            val maxSuitCount = suitCounts.maxBy { it.value }
+            val cardsLeftInDeck = getCardsInDeck().size
+            val suitedCardsLeftInDeck = getCardsInDeck().count { it.suit.suit == maxSuitCount?.key }
+            winTypeProbabilities[FLUSH] = (suitedCardsLeftInDeck.toDouble() / cardsLeftInDeck.toDouble()) * 100
+        }
     }
 
     private fun evaluateFullHouse() {
         if (getRankingsCount().containsValue(2) && getRankingsCount().containsValue(3))
-            winTypeProbabilities[FULL_HOUSE] = 100
+            winTypeProbabilities[FULL_HOUSE] = 100.0
     }
 
     private fun evaluateFourOfAKind() {
         if (getRankingsCount().filter { rankingCount -> rankingCount.value == 4 }.isNotEmpty())
-            winTypeProbabilities[FOUR_OF_A_KIND] = 100
+            winTypeProbabilities[FOUR_OF_A_KIND] = 100.0
     }
 
     private fun evaluateThreeOfAKind() {
         if (getRankingsCount().filter { rankingCount -> rankingCount.value == 3 }.isNotEmpty())
-            winTypeProbabilities[THREE_OF_A_KIND] = 100
+            winTypeProbabilities[THREE_OF_A_KIND] = 100.0
     }
 
     private fun evaluateTwoPair() {
         if (getRankingsCount().filter { rankingCount -> rankingCount.value == 2 }.size == 2)
-            winTypeProbabilities[TWO_PAIR] = 100
+            winTypeProbabilities[TWO_PAIR] = 100.0
     }
 
     private fun evaluatePair() {
         if (getRankingsCount().filter { rankingCount -> rankingCount.value == 2 }.isNotEmpty())
-            winTypeProbabilities[PAIR] = 100
+            winTypeProbabilities[PAIR] = 100.0
     }
 
     private fun getRankingsCount(): Map<Int, Int> {
@@ -77,8 +84,8 @@ class PlayerWinProbability(player: Player) : Player(player.card1, player.card2) 
     private fun evaluateStraightAndRoyalFlush() {
         for (suit in Suit.values()) {
             evaluateStraight(suit)
-            if (winTypeProbabilities[STRAIGHT_FLUSH] == 100 && getPlayerAndDealerCards().contains(Card(Rank.ACE, suit))) {
-                winTypeProbabilities[ROYAL_FLUSH] = 100
+            if (winTypeProbabilities[STRAIGHT_FLUSH] == 100.0 && getPlayerAndDealerCards().contains(Card(Rank.ACE, suit))) {
+                winTypeProbabilities[ROYAL_FLUSH] = 100.0
             }
         }
     }
@@ -95,8 +102,8 @@ class PlayerWinProbability(player: Player) : Player(player.card1, player.card2) 
             if (i == 5) break
         }
         if (rankingsInPlay.contains(Rank.ACE)) i++
-        if (i >= 5 && suit != null) winTypeProbabilities[STRAIGHT_FLUSH] = 100
-        if (i >= 5 && suit == null) winTypeProbabilities[STRAIGHT] = 100
+        if (i >= 5 && suit != null) winTypeProbabilities[STRAIGHT_FLUSH] = 100.0
+        if (i >= 5 && suit == null) winTypeProbabilities[STRAIGHT] = 100.0
     }
 
     private fun evaluateHighestCard() {
@@ -105,15 +112,15 @@ class PlayerWinProbability(player: Player) : Player(player.card1, player.card2) 
                 .filter { card -> card.rank.ranking != otherPlayersHighestRank!!.rank.ranking }.maxBy { card -> card.rank.ranking }
 
         if (otherPlayersHighestRank!!.rank.ranking < getHighestCard().rank.ranking)
-            winTypeProbabilities[HIGHEST_CARD] = 100
+            winTypeProbabilities[HIGHEST_CARD] = 100.0
         else if (otherPlayersSecondHighestRank != null &&
                 otherPlayersHighestRank.rank.ranking == getHighestCard().rank.ranking &&
                 otherPlayersSecondHighestRank.rank.ranking == getLowestCard().rank.ranking)
-            winTypeProbabilities[HIGHEST_CARD] = 100
+            winTypeProbabilities[HIGHEST_CARD] = 100.0
         else if (otherPlayersSecondHighestRank != null &&
                 otherPlayersHighestRank.rank.ranking == getHighestCard().rank.ranking &&
                 otherPlayersSecondHighestRank.rank.ranking < getLowestCard().rank.ranking)
-            winTypeProbabilities[HIGHEST_CARD] = 100
+            winTypeProbabilities[HIGHEST_CARD] = 100.0
     }
 
     private fun getPlayerAndDealerCards(): List<Card> {
@@ -130,6 +137,16 @@ class PlayerWinProbability(player: Player) : Player(player.card1, player.card2) 
         return probabilityGrid.map { suitMap: Map.Entry<Suit, MutableMap<Rank, CardStatus>> ->
             suitMap.value
                     .filter { rankMap -> listOf(OTHER_PLAYERS).contains(rankMap.value.cardType) }
+                    .map { rankMap ->
+                        Card(rankMap.key, suitMap.key)
+                    }
+        }.flatten()
+    }
+
+    private fun getCardsInDeck(): List<Card> {
+        return probabilityGrid.map { suitMap: Map.Entry<Suit, MutableMap<Rank, CardStatus>> ->
+            suitMap.value
+                    .filter { rankMap -> listOf(DECK).contains(rankMap.value.cardType) }
                     .map { rankMap ->
                         Card(rankMap.key, suitMap.key)
                     }
