@@ -33,16 +33,18 @@ class PokerTable(private val players: List<Player>,
     }
 
     fun generateResults(): List<PlayerWinProbability> {
+        val highestProbability = playerWinProbabilities.maxBy { it.bestWinTypeProbability }!!.bestWinTypeProbability
+
         val highestWinType = playerWinProbabilities
-                .mapNotNull { p ->
-                    p.winTypeProbabilities.filter { w -> w.value == 100.0 }.maxBy { w -> w.key }
-                }.map { v -> v.key }
+                .filter {
+                    it.bestWinTypeProbability == highestProbability
+                }.map { it.bestWinType }
                 .first()
 
         playerWinProbabilities
-                .filter { p -> p.winTypeProbabilities[highestWinType] == 100.0 }
-                .map { p ->
-                    p.overallProbability = 100
+                .filter { it.bestWinType == highestWinType && it.bestWinTypeProbability == highestProbability }
+                .map {
+                    it.overallProbability = highestProbability
                     winType = highestWinType
                 }
 

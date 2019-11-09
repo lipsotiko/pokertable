@@ -12,8 +12,9 @@ import com.vango.pokertable.player.Player
 class PlayerWinProbability(player: Player) : Player(player.card1, player.card2) {
 
     private val probabilityGrid = mutableMapOf<Suit, MutableMap<Rank, CardStatus>>()
-    val winTypeProbabilities = mutableMapOf<WinType, Double>()
-    var overallProbability = 0
+    var bestWinType: WinType = NOTHING
+    var bestWinTypeProbability: Double = 0.0
+    var overallProbability = 0.0
 
     init {
         for (suit in Suit.values()) {
@@ -29,65 +30,82 @@ class PlayerWinProbability(player: Player) : Player(player.card1, player.card2) 
     }
 
     fun calculateProbabilities() {
-        evaluateHighestCard()
-        evaluatePair()
-        evaluateTwoPair()
-        evaluateThreeOfAKind()
-        evaluateStraight(null)
-        evaluateFlush()
-        evaluateFullHouse()
-        evaluateFourOfAKind()
         evaluateStraightAndRoyalFlush()
-    }
-
-    private fun evaluateFlush() {
-        val suitCounts = getPlayerAndDealerCards().groupingBy { it.suit.suit }.eachCount()
-        if (suitCounts.filter { (_, v) -> v >= 5 }.isNotEmpty())
-            winTypeProbabilities[FLUSH] = 100.0
-        else {
-            val maxSuitCount = suitCounts.maxBy { it.value }
-            val cardsLeftInDeck = getCardsInDeck().size
-            val suitedCardsLeftInDeck = getCardsInDeck().count { it.suit.suit == maxSuitCount?.key }
-            winTypeProbabilities[FLUSH] = (suitedCardsLeftInDeck.toDouble() / cardsLeftInDeck.toDouble()) * 100
-        }
-    }
-
-    private fun evaluateFullHouse() {
-        if (getRankingsCount().containsValue(2) && getRankingsCount().containsValue(3))
-            winTypeProbabilities[FULL_HOUSE] = 100.0
-    }
-
-    private fun evaluateFourOfAKind() {
-        if (getRankingsCount().filter { rankingCount -> rankingCount.value == 4 }.isNotEmpty())
-            winTypeProbabilities[FOUR_OF_A_KIND] = 100.0
-    }
-
-    private fun evaluateThreeOfAKind() {
-        if (getRankingsCount().filter { rankingCount -> rankingCount.value == 3 }.isNotEmpty())
-            winTypeProbabilities[THREE_OF_A_KIND] = 100.0
-    }
-
-    private fun evaluateTwoPair() {
-        if (getRankingsCount().filter { rankingCount -> rankingCount.value == 2 }.size == 2)
-            winTypeProbabilities[TWO_PAIR] = 100.0
-    }
-
-    private fun evaluatePair() {
-        if (getRankingsCount().filter { rankingCount -> rankingCount.value == 2 }.isNotEmpty())
-            winTypeProbabilities[PAIR] = 100.0
-    }
-
-    private fun getRankingsCount(): Map<Int, Int> {
-        return getPlayerAndDealerCards().groupingBy { card -> card.rank.ranking }.eachCount()
+        if (bestWinTypeProbability != 100.0) evaluateFourOfAKind()
+        if (bestWinTypeProbability != 100.0) evaluateFullHouse()
+        if (bestWinTypeProbability != 100.0) evaluateFlush()
+        if (bestWinTypeProbability != 100.0) evaluateStraight(null)
+        if (bestWinTypeProbability != 100.0) evaluateThreeOfAKind()
+        if (bestWinTypeProbability != 100.0) evaluateTwoPair()
+        if (bestWinTypeProbability != 100.0) evaluatePair()
+        if (bestWinTypeProbability != 100.0) evaluateHighestCard()
     }
 
     private fun evaluateStraightAndRoyalFlush() {
         for (suit in Suit.values()) {
             evaluateStraight(suit)
-            if (winTypeProbabilities[STRAIGHT_FLUSH] == 100.0 && getPlayerAndDealerCards().contains(Card(Rank.ACE, suit))) {
-                winTypeProbabilities[ROYAL_FLUSH] = 100.0
+            if (bestWinType == STRAIGHT_FLUSH &&
+                    getPlayerAndDealerCards().contains(Card(Rank.ACE, suit))) {
+                bestWinType = ROYAL_FLUSH
             }
         }
+    }
+
+    private fun evaluateFlush() {
+        val suitCounts = getPlayerAndDealerCards().groupingBy { it.suit.suit }.eachCount()
+        if (suitCounts.filter { (_, v) -> v >= 5 }.isNotEmpty() && getDealersCards().size == 5) {
+            bestWinType = FLUSH
+            bestWinTypeProbability = 100.0
+        } else {
+            val maxSuitCount = suitCounts.maxBy { it.value }
+            val cardsLeftInDeck = getCardsInDeck().size
+            val suitedCardsLeftInDeck = getCardsInDeck().count { it.suit.suit == maxSuitCount?.key }
+            bestWinType = FLUSH
+            bestWinTypeProbability = (suitedCardsLeftInDeck.toDouble() / cardsLeftInDeck.toDouble()) * 100
+        }
+    }
+
+    private fun evaluateFullHouse() {
+        if (getRankingsCount().containsValue(2) && getRankingsCount().containsValue(3) && getDealersCards().size == 5) {
+            bestWinType = FULL_HOUSE
+            bestWinTypeProbability = 100.0
+        }
+    }
+
+    private fun evaluateFourOfAKind() {
+        if (getRankingsCount().filter { rankingCount -> rankingCount.value == 4 }.isNotEmpty() && getDealersCards().size == 5) {
+            bestWinType = FOUR_OF_A_KIND
+            bestWinTypeProbability = 100.0
+        }
+    }
+
+    private fun evaluateThreeOfAKind() {
+        if (getRankingsCount().filter { rankingCount -> rankingCount.value == 3 }.isNotEmpty() && getDealersCards().size == 5) {
+            bestWinType = THREE_OF_A_KIND
+            bestWinTypeProbability = 100.0
+        }
+    }
+
+    private fun evaluateTwoPair() {
+        val pairRankings = getRankingsCount().filter { rankingCount -> rankingCount.value == 2 }
+        val playerHasAtLeastOneCardInPair = (pairRankings.contains(card1.rank.ranking) || pairRankings.contains(card2.rank.ranking))
+        if (playerHasAtLeastOneCardInPair && pairRankings.size == 2 && getDealersCards().size == 5) {
+            bestWinType = TWO_PAIR
+            bestWinTypeProbability = 100.0
+        }
+    }
+
+    private fun evaluatePair() {
+        val pairRankings = getRankingsCount().filter { rankingCount -> rankingCount.value == 2 }
+        val playerHasAtLeastOneCardInPair = (pairRankings.contains(card1.rank.ranking) || pairRankings.contains(card2.rank.ranking))
+        if (playerHasAtLeastOneCardInPair && getDealersCards().size == 5) {
+            bestWinType = PAIR
+            bestWinTypeProbability = 100.0
+        }
+    }
+
+    private fun getRankingsCount(): Map<Int, Int> {
+        return getPlayerAndDealerCards().groupingBy { card -> card.rank.ranking }.eachCount()
     }
 
     private fun evaluateStraight(suit: Suit?) {
@@ -102,8 +120,14 @@ class PlayerWinProbability(player: Player) : Player(player.card1, player.card2) 
             if (i == 5) break
         }
         if (rankingsInPlay.contains(Rank.ACE)) i++
-        if (i >= 5 && suit != null) winTypeProbabilities[STRAIGHT_FLUSH] = 100.0
-        if (i >= 5 && suit == null) winTypeProbabilities[STRAIGHT] = 100.0
+        if (i >= 5 && suit != null) {
+            bestWinType = STRAIGHT_FLUSH
+            bestWinTypeProbability = 100.0
+        }
+        if (i >= 5 && suit == null) {
+            bestWinType = STRAIGHT
+            bestWinTypeProbability = 100.0
+        }
     }
 
     private fun evaluateHighestCard() {
@@ -111,22 +135,33 @@ class PlayerWinProbability(player: Player) : Player(player.card1, player.card2) 
         val otherPlayersSecondHighestRank = getOtherPlayersCards()
                 .filter { card -> card.rank.ranking != otherPlayersHighestRank!!.rank.ranking }.maxBy { card -> card.rank.ranking }
 
-        if (otherPlayersHighestRank!!.rank.ranking < getHighestCard().rank.ranking)
-            winTypeProbabilities[HIGHEST_CARD] = 100.0
-        else if (otherPlayersSecondHighestRank != null &&
-                otherPlayersHighestRank.rank.ranking == getHighestCard().rank.ranking &&
-                otherPlayersSecondHighestRank.rank.ranking == getLowestCard().rank.ranking)
-            winTypeProbabilities[HIGHEST_CARD] = 100.0
-        else if (otherPlayersSecondHighestRank != null &&
-                otherPlayersHighestRank.rank.ranking == getHighestCard().rank.ranking &&
-                otherPlayersSecondHighestRank.rank.ranking < getLowestCard().rank.ranking)
-            winTypeProbabilities[HIGHEST_CARD] = 100.0
+        if ((otherPlayersHighestRank!!.rank.ranking < getHighestCard().rank.ranking) ||
+                (otherPlayersSecondHighestRank != null &&
+                        otherPlayersHighestRank.rank.ranking == getHighestCard().rank.ranking &&
+                        otherPlayersSecondHighestRank.rank.ranking == getLowestCard().rank.ranking) ||
+                (otherPlayersSecondHighestRank != null &&
+                        otherPlayersHighestRank.rank.ranking == getHighestCard().rank.ranking &&
+                        otherPlayersSecondHighestRank.rank.ranking < getLowestCard().rank.ranking)) {
+            bestWinType = HIGHEST_CARD
+            bestWinTypeProbability = 100.0
+
+        }
     }
 
     private fun getPlayerAndDealerCards(): List<Card> {
         return probabilityGrid.map { suitMap: Map.Entry<Suit, MutableMap<Rank, CardStatus>> ->
             suitMap.value
                     .filter { rankMap -> listOf(PLAYER, DEALER).contains(rankMap.value.cardType) }
+                    .map { rankMap ->
+                        Card(rankMap.key, suitMap.key)
+                    }
+        }.flatten()
+    }
+
+    private fun getPlayerCards(): List<Card> {
+        return probabilityGrid.map { suitMap: Map.Entry<Suit, MutableMap<Rank, CardStatus>> ->
+            suitMap.value
+                    .filter { rankMap -> listOf(PLAYER).contains(rankMap.value.cardType) }
                     .map { rankMap ->
                         Card(rankMap.key, suitMap.key)
                     }
@@ -147,6 +182,16 @@ class PlayerWinProbability(player: Player) : Player(player.card1, player.card2) 
         return probabilityGrid.map { suitMap: Map.Entry<Suit, MutableMap<Rank, CardStatus>> ->
             suitMap.value
                     .filter { rankMap -> listOf(DECK).contains(rankMap.value.cardType) }
+                    .map { rankMap ->
+                        Card(rankMap.key, suitMap.key)
+                    }
+        }.flatten()
+    }
+
+    private fun getDealersCards(): List<Card> {
+        return probabilityGrid.map { suitMap: Map.Entry<Suit, MutableMap<Rank, CardStatus>> ->
+            suitMap.value
+                    .filter { rankMap -> listOf(DEALER).contains(rankMap.value.cardType) }
                     .map { rankMap ->
                         Card(rankMap.key, suitMap.key)
                     }
