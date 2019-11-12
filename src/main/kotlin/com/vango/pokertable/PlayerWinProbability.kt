@@ -113,18 +113,30 @@ class PlayerWinProbability(player: Player) : Player(player.card1, player.card2) 
                 .filter { card -> if (suit != null) card.suit == suit else true }
                 .groupingBy { card -> card.rank }
                 .eachCount()
-        var i = 0
+
+
+        val straight: MutableList<Rank> = mutableListOf()
         for (r in Rank.values()) {
-            if (rankingsInPlay.contains(r)) i++
-            else i = 0
-            if (i == 5) break
+            if (rankingsInPlay.contains(r)) straight.add(r)
+            else straight.clear()
+            if (straight.size == 5) break
         }
-        if (rankingsInPlay.contains(Rank.ACE)) i++
-        if (i >= 5 && suit != null) {
+        if (rankingsInPlay.contains(Rank.ACE)) straight.add(Rank.ACE)
+
+
+        var playerHasAtLeastOneCardInStraight = false
+        if ((straight.contains(card1.rank) && suit != null && card1.suit == suit) ||
+                (straight.contains(card2.rank) && suit != null && card2.suit == suit) ||
+                (straight.contains(card1.rank) && suit == null && card1.suit == suit) ||
+                (straight.contains(card2.rank) && suit == null)
+        )
+            playerHasAtLeastOneCardInStraight = true
+
+        if (straight.size >= 5 && suit != null && playerHasAtLeastOneCardInStraight) {
             bestWinType = STRAIGHT_FLUSH
             bestWinTypeProbability = 100.0
         }
-        if (i >= 5 && suit == null) {
+        if (straight.size >= 5 && suit == null && playerHasAtLeastOneCardInStraight) {
             bestWinType = STRAIGHT
             bestWinTypeProbability = 100.0
         }

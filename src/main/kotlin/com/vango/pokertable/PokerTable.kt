@@ -48,6 +48,8 @@ class PokerTable(private val players: List<Player>,
                     winType = highestWinType
                 }
 
+        playerWinProbabilities.map { if (it.overallProbability == 0.0) it.overallProbability = it.bestWinTypeProbability  }
+
         return playerWinProbabilities
     }
 
