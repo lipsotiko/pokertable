@@ -11,6 +11,20 @@ import org.junit.jupiter.api.Test
 class PokerTableTest {
 
     @Test
+    fun high_card_wins_with_dealer_flush() {
+        val player1 = Player(Card(ACE, CLUB), Card(TWO, CLUB))
+        val player2 = Player(Card(THREE, CLUB), Card(FOUR, CLUB))
+        val player3 = Player(Card(KING, CLUB), Card(FIVE, CLUB))
+        val table = PokerTable(
+                listOf(player1, player2, player3),
+                listOf(Card(SIX, SPADE), Card(SEVEN, SPADE), Card(EIGHT, SPADE), Card(NINE, SPADE), Card(TEN, SPADE)))
+        val filteredResults = table.generateResults().filter { p -> p.overallProbability == 100.0 }
+        assertEquals(1, filteredResults.size)
+        assertEquals(player1, filteredResults[0])
+        assertEquals(HIGHEST_CARD, table.winType())
+    }
+
+    @Test
     fun high_card_wins_with_dealer_straight() {
         val player1 = Player(Card(ACE, CLUB), Card(TWO, CLUB))
         val player2 = Player(Card(THREE, CLUB), Card(FOUR, CLUB))
