@@ -7,11 +7,17 @@
     <input v-if="dealerCards.length < 5" type="button" :value="dealButtonText" @click="dealCards()" />
     <input v-else type="button" value="Reset" @click="restCards()" />
     <h2 v-if="players.length > 0">Player's Hands</h2>
-    <ul>
-      <li v-for="player in players" :key="player.id" :class="cardClass(player.isWinner)">
-        <p class="player-id">P {{player.id}}</p>
-        <card :rank="player.card1.rank" :suit="player.card1.suit" />
-        <card :rank="player.card2.rank" :suit="player.card2.suit" />
+    <ul v-if="pokerTableResults">
+      <li
+        v-for="result in pokerTableResults.playerWinProbabilities"
+        :key="result.id"
+        :class="cardClass(result.overallProbability === 100 && dealerCards.length === 5)"
+      >
+        <p class="player-id">P {{result.id}}</p>
+        <br />
+        <p>{{result.overallProbability}}</p>
+        <card :rank="result.card1.rank" :suit="result.card1.suit" />
+        <card :rank="result.card2.rank" :suit="result.card2.suit" />
       </li>
     </ul>
     <h2 v-if="dealerCards.length > 0">Dealer's Cards</h2>
@@ -60,7 +66,8 @@ export default {
       cardIndex: 0,
       dealerCards: [],
       winningHand: null,
-      dealButtonText: "Deal Cards"
+      dealButtonText: "Deal Cards",
+      pokerTableResults: null
     };
   },
   async created() {
@@ -80,24 +87,27 @@ export default {
           this.players[i].card2 = this.cards[this.cardIndex++];
         }
 
+        this.pokerTableResults = await this.evaluatePokerTable();
         this.dealButtonText = "Deal Flop";
       } else if (this.players.length > 0 && this.dealerCards.length === 0) {
         //deal the flop
         for (let i = 0; i < 3; i++) {
           this.dealerCards.push(this.cards[this.cardIndex++]);
         }
+        this.pokerTableResults = await this.evaluatePokerTable();
         this.dealButtonText = "Deal Turn";
       } else if (this.dealerCards.length === 3) {
         //deal the turn
         this.dealerCards.push(this.cards[this.cardIndex++]);
+        this.pokerTableResults = await this.evaluatePokerTable();
         this.dealButtonText = "Deal River";
       } else if (this.dealerCards.length === 4) {
         //deal the river
         this.dealerCards.push(this.cards[this.cardIndex++]);
 
         //post to server to evaluate hands and find winner
-        const pokerTableResults = await this.evaluatePokerTable();
-        this.assignWinners(pokerTableResults);
+        this.pokerTableResults = await this.evaluatePokerTable();
+        this.winningHand = this.pokerTableResults.winType;
       }
     },
     async restCards() {
@@ -108,6 +118,7 @@ export default {
       this.players = [];
       this.winningHand = null;
       this.dealButtonText = "Deal Cards";
+      this.pokerTableResults = null;
     },
     async getCards() {
       let cardsResponse = await fetch("/api/cards");
@@ -129,21 +140,8 @@ export default {
       const pokerTableResults = await pokerTableResponse.json();
       return pokerTableResults;
     },
-    assignWinners(pokerTableResults) {
-      this.winningHand = pokerTableResults.winType;
-      this.players = this.players.map(player => {
-        player.isWinner =
-          pokerTableResults.winners.filter(
-            winner =>
-              player.card1.suit === winner.card1.suit &&
-              player.card1.rank === winner.card1.rank &&
-              player.card2.suit === winner.card2.suit &&
-              player.card2.rank === winner.card2.rank
-          ).length > 0;
-        return player;
-      });
-    },
     cardClass: function(isWinner) {
+      console.log(isWinner);
       return {
         card: true,
         winner: isWinner
