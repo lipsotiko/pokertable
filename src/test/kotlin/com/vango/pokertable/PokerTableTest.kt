@@ -73,7 +73,7 @@ class PokerTableTest {
     }
 
     @Test
-    fun kicker_breaks_tie() {
+    fun kicker_breaks_high_card_tie() {
         val player1 = Player(Card(ACE, CLUB), Card(KING, CLUB))
         val player2 = Player(Card(ACE, HEART), Card(JACK, CLUB))
         val player3 = Player(Card(ACE, SPADE), Card(TWO, CLUB))
@@ -110,6 +110,23 @@ class PokerTableTest {
     }
 
     @Test
+    fun two_pair_wins_2() {
+        val player1 = Player(Card(QUEEN, DIAMOND), Card(FOUR, HEART))
+        val player2 = Player(Card(SEVEN, CLUB), Card(THREE, CLUB))
+        val player3 = Player(Card(FOUR, SPADE), Card(FIVE, HEART))
+        val player4 = Player(Card(TWO, CLUB), Card(QUEEN, SPADE))
+        val player5 = Player(Card(EIGHT, HEART), Card(EIGHT, DIAMOND))
+        val table = PokerTable(
+                listOf(player1, player2, player3, player4, player5),
+                listOf(Card(QUEEN, HEART), Card(FOUR, DIAMOND), Card(JACK, SPADE), Card(THREE, HEART), Card(NINE, HEART)))
+        val generateResults = table.generateResults()
+        val filteredResults = generateResults.filter { p -> p.overallProbability == 100.0 && p.bestWinType == table.winType }
+        assertEquals(1, filteredResults.size)
+        assertEquals(player1, filteredResults[0])
+        assertEquals(TWO_PAIR, table.winType())
+    }
+
+    @Test
     fun two_pair_ties() {
         val player1 = Player(Card(SIX, DIAMOND), Card(FIVE, SPADE))
         val player2 = Player(Card(SIX, CLUB), Card(FIVE, HEART))
@@ -117,6 +134,10 @@ class PokerTableTest {
         val table = PokerTable(players, listOf(Card(SIX, HEART), Card(FIVE, DIAMOND)))
         assertEquals(2, table.generateResults().filter { p -> p.overallProbability == 100.0 }.size)
         assertEquals(HIGHEST_CARD, table.winType())
+    }
+
+    @Test
+    fun kicker_breaks_two_pair_tie() {
     }
 
     @Test
@@ -128,6 +149,10 @@ class PokerTableTest {
                 listOf(Card(THREE, HEART), Card(FOUR, DIAMOND), Card(TWO, SPADE), Card(JACK, CLUB), Card(KING, SPADE)))
         assertEquals(player1, table.generateResults().filter { p -> p.overallProbability == 100.0 }[0])
         assertEquals(THREE_OF_A_KIND, table.winType())
+    }
+    
+    @Test
+    fun kicker_breaks_three_of_a_kind_tie() {
     }
 
     @Test

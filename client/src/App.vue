@@ -5,13 +5,13 @@
     </div>
     <input v-model="numberOfPlayers" type="number" placeholder="Input number of players" />
     <input v-if="dealerCards.length < 5" type="button" :value="dealButtonText" @click="dealCards()" />
-    <input v-else type="button" value="Reset" @click="restCards()" />
+    <input type="button" value="Reset" @click="restCards()" />
     <h2 v-if="players.length > 0">Player's Hands</h2>
     <ul v-if="pokerTableResults">
       <li
         v-for="result in pokerTableResults.playerWinProbabilities"
         :key="result.id"
-        :class="cardClass(result.overallProbability === 100 && dealerCards.length === 5)"
+        :class="cardClass(result.overallProbability === 100 && result.bestWinType === winType && dealerCards.length === 5)"
       >
         <p class="player-id">P {{result.id}}</p>
         <br />
@@ -27,7 +27,7 @@
       </li>
     </ul>
     <h2 v-if="dealerCards.length === 5">Winning Hand</h2>
-    <p>{{winningHand}}</p>
+    <p>{{winType}}</p>
     <hr />
     <a class="git-url" href="https://github.com/lipsotiko/pokertable">Git</a>
   </div>
@@ -65,7 +65,7 @@ export default {
       players: [],
       cardIndex: 0,
       dealerCards: [],
-      winningHand: null,
+      winType: null,
       dealButtonText: "Deal Cards",
       pokerTableResults: null
     };
@@ -107,7 +107,7 @@ export default {
 
         //post to server to evaluate hands and find winner
         this.pokerTableResults = await this.evaluatePokerTable();
-        this.winningHand = this.pokerTableResults.winType;
+        this.winType = this.pokerTableResults.winType;
       }
     },
     async restCards() {
@@ -116,7 +116,7 @@ export default {
       this.numberOfPlayers = null;
       this.dealerCards = [];
       this.players = [];
-      this.winningHand = null;
+      this.winType = null;
       this.dealButtonText = "Deal Cards";
       this.pokerTableResults = null;
     },
@@ -141,7 +141,6 @@ export default {
       return pokerTableResults;
     },
     cardClass: function(isWinner) {
-      console.log(isWinner);
       return {
         card: true,
         winner: isWinner
