@@ -33,6 +33,9 @@ class PokerTable(private val players: List<Player>,
     }
 
     fun generateResults(): List<PlayerWinProbability> {
+        if (dealerCards.size < 3)
+            return playerWinProbabilities
+
         val highestProbability = playerWinProbabilities.maxBy { it.bestWinTypeProbability }!!.bestWinTypeProbability
 
         val highestWinType = playerWinProbabilities
